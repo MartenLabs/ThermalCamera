@@ -19,8 +19,6 @@
 ## 2. 대표 라이브러리
 - **adafruit_mlx90640**: mlx90640을 사용하기 위한 라이브러리
 
-<br/>
-
 - **tensorflow**: object detection을 위한 라이브러리
 
 - **cv2**: 영상 녹화 및 노이즈 필터링을 위한 라이브러리
