@@ -99,6 +99,11 @@ text = 'Person Detected' if predictions > 0.5 else 'No Person'
 <br/>
 <br/>
 
+| 1M | 1.5M | 2M | 3M |
+| :---: | :---: | :---: | :---: |
+| <img src="Data/Readme/1M.png" alt="drawing" width="300"/> | <img src="Data/Readme/비교_filters.png" alt="drawing" width="300"/>| <img src="Data/Readme/2M.png" alt="drawing" width="300"/> | <img src="Data/Readme/3M.png" alt="drawing" width="300"/>|
+
+
 ## 5. 사용한 데이터셋
 
 with human data (24 x 32)
