@@ -1,6 +1,15 @@
 
 # MLX90640을 사용한 Object Detection 
 
+<br/>
+<br/>
+<br/>
+<br/>
+
+# 1차 센서 테스트 및 후처리
+
+<br/>
+<br/>
 
 ## 1. 개요
 라즈베리파이 4B에 MLX90640를 사용하여 Object Detection을 수행하는 프로젝트.
@@ -163,3 +172,16 @@ Test accuracy: 1.0
 
 ![](Result/v1_CNN/1차_CNN.gif)
 
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+# 2차 SSD를 사용한 Object Detection
+
+<br/>
+<br/>
+
+## 1. 개요
