@@ -2,7 +2,7 @@ import os
 import cv2
 import datetime
 
-get_location = '/Users/mac/Dev/Project/ThermalCamera/Data/ALL/'
+get_location = '/Users/mac/Dev/Project/ThermalCamera/Data/사용할거/'
 
 img_count:int = 0
 # 해당 경로에 있는 모든 mp4 파일 경로를 리스트로 저장

@@ -8,7 +8,7 @@ import cv2
 import datetime
 
 class ThermalCamera:
-    def __init__(self, output_filename, frame_shape=(24, 32), fps=7):
+    def __init__(self, output_filename, frame_shape=(24, 32), fps=3):
         # 현재 시간을 가져와서 출력 파일 이름 생성
         self.current_datetime = datetime.datetime.now()
         self.output_filename = output_filename
@@ -98,10 +98,9 @@ class ThermalCamera:
         finally:
             t_total = time.monotonic() - t_start
             print('Average Frame Rate: {0:2.1f}fps'.format(frame_count / t_total))
+            print("Recording finished.")
             self.out.release()
             exit(1)
-        print("Recording finished.")
-
 
 if __name__ == "__main__":
     output_filename = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S') + ".mp4"

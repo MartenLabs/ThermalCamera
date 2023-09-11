@@ -9,7 +9,7 @@ import datetime
 import tensorflow as tf
 
 class ThermalCamera:
-    def __init__(self, output_filename, model_filename, frame_shape=(24, 32), fps=7):
+    def __init__(self, output_filename, model_filename, frame_shape=(24, 32), fps=3):
         # 현재 시간을 가져와서 출력 파일 이름 생성
         self.current_datetime = datetime.datetime.now()
         self.output_filename = output_filename
@@ -60,17 +60,20 @@ class ThermalCamera:
 
         # 보간: 유효한 값을 기반으로 빈 픽셀을 보간하여 완전한 이미지를 생성
         x_idx_all, y_idx_all = np.indices(data_array_smoothed.shape)
-        interpolated_data_arrary = interpolate.griddata((x_idx_valid_values, y_idx_valid_values), valid_values, (x_idx_all, y_idx_all), 'cubic')
+        interpolated_data_array = interpolate.griddata((x_idx_valid_values, y_idx_valid_values), valid_values, (x_idx_all, y_idx_all), 'cubic')
 
         # 인체 온도 범위 외의 픽셀을 마스킹 (온도 가정)
-        interpolated_data_arrary[(interpolated_data_arrary <= 25) | (interpolated_data_arrary > 40)] = 0
+        interpolated_data_array[(interpolated_data_array <= 25) | (interpolated_data_array > 40)] = 0
 
+        # 이미지를 0-1 범위로 정규화 (전처리)
+        image = (interpolated_data_array - np.min(interpolated_data_array)) / (np.max(interpolated_data_array) - np.min(interpolated_data_array))
+
+        # 모델에 이미지 입력
+        predictions = self.model.predict(np.expand_dims(image, axis=0))  # 이미지를 배치 차원을 추가하여 모델에 전달
+        
         # 이미지를 0-255 범위로 변환
-        img_array = (interpolated_data_arrary - np.min(interpolated_data_arrary)) / (np.max(interpolated_data_arrary) - np.min(interpolated_data_arrary)) * 255
-
-         # 딥러닝 모델을 사용하여 사람 감지 예측 수행
-        prediction = self.model.predict(np.expand_dims(img_array, axis=0))[0]
-
+        img_array = (interpolated_data_array - np.min(interpolated_data_array)) / (np.max(interpolated_data_array) - np.min(interpolated_data_array)) * 255
+        
         # 녹화를 위해 이미지를 3 채널로 확장
         expanded_img_array = np.expand_dims(img_array, axis=2)
         expanded_img_array = np.tile(expanded_img_array, (1, 1, 3))
@@ -80,18 +83,18 @@ class ThermalCamera:
         
        
         # 예측 결과에 따라 텍스트 표시
-        text = 'Person Detected' if prediction > 0.5 else 'No Person'
+        text = 'Person Detected' if predictions > 0.5 else 'No Person'
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 0.5
         font_thickness = 1
 
         # 이미지 중앙 아래에 위치
-        text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
-        text_x = (expanded_img_array.shape[1] - text_size[0]) // 2  # 이미지 가로 중앙
-        text_y = expanded_img_array.shape[0] - 10  # 이미지 하단
+        # text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+        # text_x = (expanded_img_array.shape[1] - text_size[0]) // 2  # 이미지 가로 중앙
+        # text_y = expanded_img_array.shape[0] - 10  # 이미지 하단
 
         # 텍스트 그리기
-        cv2.putText(expanded_img_array, text, (text_x, text_y), font, font_scale, (0, 0, 255), font_thickness)
+        # cv2.putText(expanded_img_array, text, (text_x, text_y), font, font_scale, (0, 0, 255), font_thickness)
         print(text)
         
         return expanded_img_array
@@ -128,6 +131,6 @@ class ThermalCamera:
 
 if __name__ == "__main__":
     output_filename = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S') + ".mp4"
-    model_filename = "./detect.h5"  # 학습된 모델 파일 경로
+    model_filename = "detect.h5"  # 학습된 모델 파일 경로
     thermal_camera = ThermalCamera(output_filename, model_filename)
     thermal_camera.record_video()
