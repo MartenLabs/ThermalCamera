@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>2-_1-mp4_50_png.rf.3a94a77233ceb1c3afdc7ca6d31e4450.jpg</filename>
+	<path>2-_1-mp4_50_png.rf.3a94a77233ceb1c3afdc7ca6d31e4450.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>32</width>
+		<height>24</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>person</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>18</xmin>
+			<xmax>28</xmax>
+			<ymin>1</ymin>
+			<ymax>16</ymax>
+		</bndbox>
+	</object>
+</annotation>

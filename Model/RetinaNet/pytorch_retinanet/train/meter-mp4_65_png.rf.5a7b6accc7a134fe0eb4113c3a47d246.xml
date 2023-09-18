@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>meter-mp4_65_png.rf.5a7b6accc7a134fe0eb4113c3a47d246.jpg</filename>
+	<path>meter-mp4_65_png.rf.5a7b6accc7a134fe0eb4113c3a47d246.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>28</width>
+		<height>22</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>person</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>9</xmin>
+			<xmax>18</xmax>
+			<ymin>7</ymin>
+			<ymax>16</ymax>
+		</bndbox>
+	</object>
+</annotation>
