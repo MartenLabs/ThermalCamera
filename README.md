@@ -123,7 +123,7 @@ text = 'Person Detected' if predictions > 0.5 else 'No Person'
 
 with human data (24 x 32)
 
-<img src="Model/dataset/train/with_human/2023-09-11%2005-33-46.mp4_132.png" alt="drawing" width="400"/>
+<img src="Data/Readme/withperson.png" alt="drawing" width="400"/>
 
 <br/>
 <br/>
@@ -131,7 +131,7 @@ with human data (24 x 32)
 
 without human data (24 x 32)
 
-<img src="Model/dataset/train/without_human/2023-09-11 05-35-40.mp4_213.png" alt="drawing" width="400"/>
+<img src="Data/Readme/withoutpserson.png" alt="drawing" width="400"/>
 
 
 ## 6. 사용한 학습 모델
@@ -192,3 +192,10 @@ Test accuracy: 1.0
 
 ## 1. 개요
 라즈베리파이 4B에 MLX90640를 사용하여 SSD Object Detection을 수행하는 프로젝트 수행
+
+
+<img src="Result/v2_RetinaNet/output.png" alt="drawing" width="400"/>
+
+<br/>
+<br/>
+<br/>
