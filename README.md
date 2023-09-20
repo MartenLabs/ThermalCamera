@@ -392,104 +392,6 @@ prefix: /home/gpuadmin/anaconda3/envs/retina
 ### Model Training
 
 ``` bash
-Epoch 00069: saving model to ./snapshots/resnet50_csv_69.h5
-Epoch 70/1000
-1000/1000 [==============================] - 153s 153ms/step - loss: 0.7373 - regression_loss: 0.6560 - classification_loss: 0.0814
-
-Epoch 00070: saving model to ./snapshots/resnet50_csv_70.h5
-
-Epoch 00070: ReduceLROnPlateau reducing learning rate to 9.999999424161285e-20.
-Epoch 71/1000
-1000/1000 [==============================] - 151s 151ms/step - loss: 0.7078 - regression_loss: 0.6289 - classification_loss: 0.0788
-
-Epoch 00071: saving model to ./snapshots/resnet50_csv_71.h5
-Epoch 72/1000
-1000/1000 [==============================] - 150s 150ms/step - loss: 0.7250 - regression_loss: 0.6474 - classification_loss: 0.0777
-
-Epoch 00072: saving model to ./snapshots/resnet50_csv_72.h5
-
-Epoch 00072: ReduceLROnPlateau reducing learning rate to 9.999999682655225e-21.
-Epoch 73/1000
-1000/1000 [==============================] - 151s 151ms/step - loss: 0.7228 - regression_loss: 0.6447 - classification_loss: 0.0782
-
-Epoch 00073: saving model to ./snapshots/resnet50_csv_73.h5
-Epoch 74/1000
-1000/1000 [==============================] - 151s 151ms/step - loss: 0.7408 - regression_loss: 0.6533 - classification_loss: 0.0875
-
-Epoch 00074: saving model to ./snapshots/resnet50_csv_74.h5
-
-Epoch 00074: ReduceLROnPlateau reducing learning rate to 9.999999682655225e-22.
-Epoch 75/1000
-1000/1000 [==============================] - 153s 153ms/step - loss: 0.6977 - regression_loss: 0.6210 - classification_loss: 0.0766
-
-Epoch 00075: saving model to ./snapshots/resnet50_csv_75.h5
-Epoch 76/1000
-1000/1000 [==============================] - 156s 156ms/step - loss: 0.7383 - regression_loss: 0.6533 - classification_loss: 0.0850
-
-Epoch 00076: saving model to ./snapshots/resnet50_csv_76.h5
-Epoch 77/1000
-1000/1000 [==============================] - 153s 153ms/step - loss: 0.7063 - regression_loss: 0.6347 - classification_loss: 0.0716
-
-Epoch 00077: saving model to ./snapshots/resnet50_csv_77.h5
-
-Epoch 00077: ReduceLROnPlateau reducing learning rate to 9.999999682655225e-23.
-Epoch 78/1000
-1000/1000 [==============================] - 152s 152ms/step - loss: 0.7138 - regression_loss: 0.6336 - classification_loss: 0.0802
-
-Epoch 00078: saving model to ./snapshots/resnet50_csv_78.h5
-Epoch 79/1000
-1000/1000 [==============================] - 153s 153ms/step - loss: 0.7233 - regression_loss: 0.6463 - classification_loss: 0.0770
-
-Epoch 00079: saving model to ./snapshots/resnet50_csv_79.h5
-
-Epoch 00079: ReduceLROnPlateau reducing learning rate to 9.999999682655227e-24.
-Epoch 80/1000
-1000/1000 [==============================] - 158s 158ms/step - loss: 0.7402 - regression_loss: 0.6535 - classification_loss: 0.0868
-
-Epoch 00080: saving model to ./snapshots/resnet50_csv_80.h5
-Epoch 81/1000
-1000/1000 [==============================] - 155s 155ms/step - loss: 0.7175 - regression_loss: 0.6417 - classification_loss: 0.0758
-
-Epoch 00081: saving model to ./snapshots/resnet50_csv_81.h5
-
-Epoch 00081: ReduceLROnPlateau reducing learning rate to 9.999999998199588e-25.
-Epoch 82/1000
-1000/1000 [==============================] - 152s 152ms/step - loss: 0.6973 - regression_loss: 0.6291 - classification_loss: 0.0682
-
-Epoch 00082: saving model to ./snapshots/resnet50_csv_82.h5
-Epoch 83/1000
-1000/1000 [==============================] - 153s 153ms/step - loss: 0.7145 - regression_loss: 0.6363 - classification_loss: 0.0782
-
-Epoch 00083: saving model to ./snapshots/resnet50_csv_83.h5
-Epoch 84/1000
-1000/1000 [==============================] - 153s 153ms/step - loss: 0.7301 - regression_loss: 0.6524 - classification_loss: 0.0777
-
-Epoch 00084: saving model to ./snapshots/resnet50_csv_84.h5
-
-Epoch 00084: ReduceLROnPlateau reducing learning rate to 1.0000000195414814e-25.
-Epoch 85/1000
-1000/1000 [==============================] - 157s 157ms/step - loss: 0.7296 - regression_loss: 0.6509 - classification_loss: 0.0787
-
-Epoch 00085: saving model to ./snapshots/resnet50_csv_85.h5
-Epoch 86/1000
-1000/1000 [==============================] - 152s 152ms/step - loss: 0.7147 - regression_loss: 0.6367 - classification_loss: 0.0780
-
-Epoch 00086: saving model to ./snapshots/resnet50_csv_86.h5
-
-Epoch 00086: ReduceLROnPlateau reducing learning rate to 1.0000000195414814e-26.
-Epoch 87/1000
-1000/1000 [==============================] - 155s 155ms/step - loss: 0.7186 - regression_loss: 0.6405 - classification_loss: 0.0781
-
-Epoch 00087: saving model to ./snapshots/resnet50_csv_87.h5
-Epoch 88/1000
-1000/1000 [==============================] - 153s 153ms/step - loss: 0.7093 - regression_loss: 0.6328 - classification_loss: 0.0765
-
-Epoch 00088: saving model to ./snapshots/resnet50_csv_88.h5
-
-Epoch 00088: ReduceLROnPlateau reducing learning rate to 9.999999887266024e-28.
-Epoch 89/1000
-1000/1000 [==============================] - 158s 158ms/step - loss: 0.7001 - regression_loss: 0.6236 - classification_loss: 0.0765
-
 Epoch 00089: saving model to ./snapshots/resnet50_csv_89.h5
 Epoch 90/1000
 1000/1000 [==============================] - 151s 151ms/step - loss: 0.7049 - regression_loss: 0.6306 - classification_loss: 0.0742
@@ -551,6 +453,31 @@ Epoch 100/1000
 <br/>
 
 ![](Result/v2_RetinaNet/2차_RetinaNet.gif)
+
 <br/>
 <br/>
 <br/>
+
+## 문제점 
+
+``` bash
+==================================================================================================
+Total params: 36382957 (138.79 MB)
+Trainable params: 36276717 (138.38 MB)
+Non-trainable params: 106240 (415.00 KB)
+__________________________________________________________________________________________________
+None
+Frame Rate: 0.0fps
+Frame Rate: 0.0fps
+Frame Rate: 0.0fps
+Frame Rate: 0.0fps
+Frame Rate: 0.0fps
+Frame Rate: 0.0fps
+Frame Rate: 0.0fps
+
+Average Frame Rate: 0.0fps
+```
+
+<br/>
+
+- 실시간 처리 불가능
