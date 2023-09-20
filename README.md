@@ -3,12 +3,9 @@
 
 <br/>
 <br/>
-<br/>
-<br/>
 
 # 1차 센서 테스트 및 후처리
 
-<br/>
 <br/>
 
 ## 1. 개요
@@ -28,7 +25,13 @@
 <br/>
 
 ## 3. 하드웨어
+
 - **RaspberryPi4B 8GB**
+
+- **MLX90640**
+  - IR Array Thermal Imaging Camera 32×24 Pixels 110° Field of View I2C Interface 3.3V/5V
+  <img src="Data/Readme/MLX90640.jpg" alt="drawing" width="200"/>
+  
 
 <br/>
 
@@ -191,13 +194,12 @@ Test accuracy: 1.0
 <br/>
 
 ## 1. 개요
-라즈베리파이 4B에 MLX90640를 사용하여 SSD Object Detection을 수행하는 프로젝트 수행
+라즈베리파이 4B에 MLX90640를 사용하여 RetinaNet Object Detection을 수행하는 프로젝트 수행
 
 <br/>
 <br/>
 
-## 2. 버전
-
+## 2. 버전 및 라이브러리
 
 - ### **GPU** ###
 
@@ -389,7 +391,7 @@ prefix: /home/gpuadmin/anaconda3/envs/retina
 <br/>
 <br/>
 
-### Model Training
+## 3. Model Training
 
 ``` bash
 Epoch 00089: saving model to ./snapshots/resnet50_csv_89.h5
@@ -448,7 +450,7 @@ Epoch 100/1000
 <br/>
 <br/>
 
-## RetinaNet 학습 결과
+## 4. RetinaNet 학습 결과
 
 <br/>
 
@@ -458,7 +460,7 @@ Epoch 100/1000
 <br/>
 <br/>
 
-## 문제점 
+## 5. 문제점 
 
 ``` bash
 ==================================================================================================
@@ -481,3 +483,14 @@ Average Frame Rate: 0.0fps
 <br/>
 
 - 실시간 처리 불가능
+
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+# 3차 SSD를 사용한 Object Detection
+
+
