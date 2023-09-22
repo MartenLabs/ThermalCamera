@@ -493,4 +493,132 @@ Average Frame Rate: 0.0fps
 
 # 3차 SSD를 사용한 Object Detection
 
+<br/>
+
+## Tensorflow2 API Install Guide
+
+<br/>
+
+### 0. Python version
+
+``` bash
+$ conda create -n tf_api python=3.8
+
+$ conda activate tf_api
+```
+
+<br/>
+
+### 1. Tensorflow 디렉토리 생성 및 Model Repository Clone
+
+``` bash
+$ mkdir ~/tensorflow
+
+$ git clone https://github.com/tensorflow/models.git
+```
+<br/>
+디렉토리 구조 
+
+```
+tensorflow
+└─ models/
+   ├─ community/
+   ├─ official/
+   ├─ orbit/
+   ├─ research/
+   └─ ...
+```
+
+<br/>
+
+### 2. tf-models-official & tf-models-nightly 설치 
+
+``` bash
+$ pip install tf-models-official tf-models-nightly
+```
+
+<br/>
+
+### 3. Protobuf compile
+
+``` bash
+
+$ sudo apt install protobuf-compiler
+
+$ cd models/research
+
+# from /tensorflow/models/research/
+$ protoc object_detection/protos/*.proto --python_out=.
+
+# from /tensorflow/models/research/
+$ cp object_detection/packages/tf2/setup.py .
+
+$ python -m pip install .
+```
+
+<br/>
+
+### 4. PYTHONPATH 환경변수 설정
+
+``` bash
+# from /tensorflow/models/research/
+$ export PYTHONPATH=`pwd`:`pwd`/slim
+
+$ vim ~/.bashrc
+
+$ export PYTHONPATH=$PYTHONPATH:/tensorflow/models/research:/tensorflow/models/research/slim
+
+$ source ~/.bashrc
+```
+
+<br/>
+
+### 5. Installation Check
+
+``` bash
+$ python object_detection/builders/model_builder_tf2_test.py
+
+
+...
+[       OK ] ModelBuilderTF2Test.test_invalid_faster_rcnn_batchnorm_update
+[ RUN      ] ModelBuilderTF2Test.test_invalid_first_stage_nms_iou_threshold
+INFO:tensorflow:time(__main__.ModelBuilderTF2Test.test_invalid_first_stage_nms_iou_threshold): 0.0s
+I0921 10:03:14.221210 140400159466432 test_util.py:2462] time(__main__.ModelBuilderTF2Test.test_invalid_first_stage_nms_iou_threshold): 0.0s
+[       OK ] ModelBuilderTF2Test.test_invalid_first_stage_nms_iou_threshold
+[ RUN      ] ModelBuilderTF2Test.test_invalid_model_config_proto
+INFO:tensorflow:time(__main__.ModelBuilderTF2Test.test_invalid_model_config_proto): 0.0s
+I0921 10:03:14.221573 140400159466432 test_util.py:2462] time(__main__.ModelBuilderTF2Test.test_invalid_model_config_proto): 0.0s
+[       OK ] ModelBuilderTF2Test.test_invalid_model_config_proto
+[ RUN      ] ModelBuilderTF2Test.test_invalid_second_stage_batch_size
+INFO:tensorflow:time(__main__.ModelBuilderTF2Test.test_invalid_second_stage_batch_size): 0.0s
+I0921 10:03:14.222598 140400159466432 test_util.py:2462] time(__main__.ModelBuilderTF2Test.test_invalid_second_stage_batch_size): 0.0s
+[       OK ] ModelBuilderTF2Test.test_invalid_second_stage_batch_size
+[ RUN      ] ModelBuilderTF2Test.test_session
+[  SKIPPED ] ModelBuilderTF2Test.test_session
+[ RUN      ] ModelBuilderTF2Test.test_unknown_faster_rcnn_feature_extractor
+INFO:tensorflow:time(__main__.ModelBuilderTF2Test.test_unknown_faster_rcnn_feature_extractor): 0.0s
+I0921 10:03:14.223552 140400159466432 test_util.py:2462] time(__main__.ModelBuilderTF2Test.test_unknown_faster_rcnn_feature_extractor): 0.0s
+[       OK ] ModelBuilderTF2Test.test_unknown_faster_rcnn_feature_extractor
+[ RUN      ] ModelBuilderTF2Test.test_unknown_meta_architecture
+INFO:tensorflow:time(__main__.ModelBuilderTF2Test.test_unknown_meta_architecture): 0.0s
+I0921 10:03:14.223824 140400159466432 test_util.py:2462] time(__main__.ModelBuilderTF2Test.test_unknown_meta_architecture): 0.0s
+[       OK ] ModelBuilderTF2Test.test_unknown_meta_architecture
+[ RUN      ] ModelBuilderTF2Test.test_unknown_ssd_feature_extractor
+INFO:tensorflow:time(__main__.ModelBuilderTF2Test.test_unknown_ssd_feature_extractor): 0.0s
+I0921 10:03:14.224537 140400159466432 test_util.py:2462] time(__main__.ModelBuilderTF2Test.test_unknown_ssd_feature_extractor): 0.0s
+[       OK ] ModelBuilderTF2Test.test_unknown_ssd_feature_extractor
+----------------------------------------------------------------------
+Ran 24 tests in 26.250s
+
+OK (skipped=1)
+```
+
+<br/>
+
+
+
+
+
+
+
 
