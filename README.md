@@ -391,7 +391,15 @@ prefix: /home/gpuadmin/anaconda3/envs/retina
 <br/>
 <br/>
 
+
+
+
 ## 3. Model Training
+``` bash
+$ python keras_retinanet/bin/train.py --gpu 0 --epochs=1000 --steps=1000  --workers=0 csv train/_annotations.csv train/classes.csv
+
+$ python keras_retinanet/bin/convert_model.py /Users/mac/Dev/Project/ThermalCamera/Model/keras-retinanet/snapshots/resnet50_csv_110.h5 /Users/mac/Dev/Project/ThermalCamera/Model/keras-retinanet/snapshots/main110.h5
+```
 
 ``` bash
 Epoch 00089: saving model to ./snapshots/resnet50_csv_89.h5
