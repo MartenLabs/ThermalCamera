@@ -622,6 +622,111 @@ OK (skipped=1)
 ```
 
 <br/>
+<br/>
+<br/>
+
+# 3.1차 Auto-Encoder를 사용한 필터 재설계
+
+<br/>
+
+## 1. 개요
+
+에어컨 옆 또는 전등 주변, 창문 근처에서 필터가 재기능을 못하는 현상이 발견되어 Auto-Encoder 모델로 필터 재설계 
+
+  <img src="Data/Readme/FilterError.gif" alt="drawing" width="500"/>
+
+<br/>
+<br/>
+
+## 2. 모델
+
+``` python
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense, MaxPool2D, Conv2D, Conv2DTranspose, Flatten, Reshape
+
+# 24, 32, 1
+def AutoEncoder():
+    inputs = Input(shape=(24, 32, 1))
+    x = Conv2D(filters = 32, kernel_size = 3, strides = 2, padding = 'same', activation = 'relu')(inputs)
+    x = Conv2D(filters = 64, kernel_size = 3, strides = 2, padding = 'same', activation = 'relu')(x)
+    x = Conv2D(filters = 128, kernel_size = 3, strides = 2, padding = 'same', activation = 'relu')(x)
+    x = Flatten()(x)
+    latent_vector = Dense(units = 10)(x)
+
+    x = Dense(3 * 4 * 128)(latent_vector)
+    x = Reshape(target_shape=(3, 4, 128))(x)
+    x = Conv2DTranspose(filters = 128, kernel_size = 3, strides = 2, padding = 'same', activation = 'relu')(x)
+    x = Conv2DTranspose(filters = 64, kernel_size = 3, strides = 2, padding = 'same', activation = 'relu')(x)
+    x = Conv2DTranspose(filters = 32, kernel_size = 3, strides = 2, padding = 'same', activation = 'sigmoid')(x)
+    outputs = Conv2DTranspose(filters = 1, kernel_size = 3, padding = 'same', activation = 'sigmoid')(x)
+
+    return Model(inputs , outputs)
+
+  
+model = AutoEncoder()
+model.summary()
+```
+
+``` text
+Model: "model"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ input_1 (InputLayer)        [(None, 24, 32, 1)]       0         
+                                                                 
+ conv2d (Conv2D)             (None, 12, 16, 32)        320       
+                                                                 
+ conv2d_1 (Conv2D)           (None, 6, 8, 64)          18496     
+                                                                 
+ conv2d_2 (Conv2D)           (None, 3, 4, 128)         73856     
+                                                                 
+ flatten (Flatten)           (None, 1536)              0         
+                                                                 
+ dense (Dense)               (None, 10)                15370     
+                                                                 
+ dense_1 (Dense)             (None, 1536)              16896     
+                                                                 
+ reshape (Reshape)           (None, 3, 4, 128)         0         
+                                                                 
+ conv2d_transpose (Conv2DTr  (None, 6, 8, 128)         147584    
+ anspose)                                                        
+                                                                 
+ conv2d_transpose_1 (Conv2D  (None, 12, 16, 64)        73792     
+ Transpose)                                                      
+                                                                 
+ conv2d_transpose_2 (Conv2D  (None, 24, 32, 32)        18464     
+ Transpose)                                                      
+                                                                 
+ conv2d_transpose_3 (Conv2D  (None, 24, 32, 1)         289       
+ Transpose)                                                      
+                                                                 
+=================================================================
+Total params: 365067 (1.39 MB)
+Trainable params: 365067 (1.39 MB)
+Non-trainable params: 0 (0.00 Byte)
+_________________________________________________________________
+```
+
+<br/>
+<br/>
+
+## 3. 학습 데이터셋
+
+Original Data(위)  (24 x 32)
+
+
+<img src="Data/Readme/AutoEncoder_Datasets.png" alt="drawing" width="400"/>
+
+Segmentation Data(아래) (24 x 32)        
+
+<br/>
+<br/>
+
+## 4. 결과
+
+<img src="Data/Readme/AutoEncoder_filter.png" alt="drawing" width="500"/>
+
+
 
 
 
