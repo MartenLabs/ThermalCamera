@@ -108,8 +108,8 @@ text = 'Person Detected' if predictions > 0.5 else 'No Person'
 
 <br/>
 
-###  1.5M 기준 후처리 비교
-| 원본 | 후처리 | 
+###  1.5M 기준 전처리 비교
+| 원본 | 전처리 | 
 |:---:|:---:|
 |<img src="Data/Readme/비교_original.png" alt="drawing" width="300"/>| <img src="Data/Readme/비교_filters.png" alt="drawing" width="300"/>|
 
