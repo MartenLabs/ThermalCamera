@@ -12,7 +12,7 @@ file_list = [file for file in os.listdir(get_location) if not file.startswith('.
 for file in file_list:
     # 비디오 이름으로 폴더 생성 후 경로 저장 
     try:
-        os.mkdir(f"/Users/mac/Dev/Project/ThermalCamera/Model/Custom/Datasets/original/imgs/{file}")
+        os.mkdir(f"/Users/mac/Dev/Project/ThermalCamera/Model/Custom/Datasets/original/Video/img/{file}")
     except FileExistsError:
         pass 
     vidcap = cv2.VideoCapture(get_location + file)
@@ -26,7 +26,7 @@ for file in file_list:
         if int(vidcap.get(1)) % 1 == 0:
             print('Saved frame number : ' + str(int(vidcap.get(1))))
             # 추출된 이미지가 저장되는 경로
-            cv2.imwrite(f"/Users/mac/Dev/Project/ThermalCamera/Model/Custom/Datasets/original/imgs/{file}/{count}.png", image)
+            cv2.imwrite(f"/Users/mac/Dev/Project/ThermalCamera/Model/Custom/Datasets/original/Video/img/{count}_png.png", image)
         count += 1
         img_count += 1
 
