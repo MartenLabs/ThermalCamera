@@ -14,19 +14,23 @@ def extract_number(filename):
 image_files = sorted([f for f in os.listdir(image_dir) if f.endswith('.jpg')], key=extract_number)
 label_files = sorted([f for f in os.listdir(label_dir) if f.endswith('.txt')], key=extract_number)
 
-
 # 결과 저장을 위한 리스트
 images = []
 filters = []
 numbers = []
+coordinates = []
+
+MAX_BOXES = 4
+EMPTY_BOX = [0, 0, 0, 0, 0, 0, 0, 0]
 
 for i, (img_file, lbl_file) in enumerate(zip(image_files, label_files)):
     img_path = os.path.join(image_dir, img_file)
     lbl_path = os.path.join(label_dir, lbl_file)
     
-    # 이미지 읽기 (흑백 이미지로 로드)
     img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-    filtered_img = np.zeros_like(img)  # 사람이 없는 부분은 검은색으로 초기화
+    filtered_img = np.zeros_like(img)
+
+    boxes = []
 
     with open(lbl_path, 'r') as f:
         lines = f.readlines()
@@ -37,23 +41,30 @@ for i, (img_file, lbl_file) in enumerate(zip(image_files, label_files)):
             label = items[-2]
             if label == 'person':
                 person_count += 1
-                # 바운딩 박스 좌표 가져오기
-                pts = np.array([[int(items[j]), int(items[j+1])] for j in range(0, 8, 2)])
+
+                coords = [int(coord) for coord in items[:8]]
+                boxes.append(coords)
+
+                # 바운딩 박스를 이용해서 filtered_img 업데이트
+                pts = np.array([[coords[j], coords[j+1]] for j in range(0, 8, 2)])
                 rect = cv2.boundingRect(pts)
                 x, y, w, h = rect
                 roi = img[y:y+h, x:x+w]
-                filtered_img[y:y+h, x:x+w] = roi  # 사람 있는 부분은 원본 이미지 데이터로 업데이트
+                filtered_img[y:y+h, x:x+w] = roi
+
+        # 최대 바운딩 박스 개수까지 고려해 남은 바운딩 박스를 EMPTY_BOX로 채우기
+        while len(boxes) < MAX_BOXES:
+            boxes.append(EMPTY_BOX)
 
         # 사람의 수에 따라 numbers 배열에 값 추가
-        if person_count == 0:
-            numbers.append(0)
-        elif person_count == 1:
-            numbers.append(1)
-        else:
-            numbers.append(2)
+        numbers.append(person_count)
 
         images.append(img)
         filters.append(filtered_img)
+        coordinates.append(boxes)
 
-# npz 파일로 저장
-np.savez('dataset.npz', images=np.array(images), filters=np.array(filters), numbers=np.array(numbers))
+np.savez('detection_dataset.npz', 
+         images=np.array(images), 
+         filters=np.array(filters), 
+         numbers=np.array(numbers), 
+         coordinates=np.array(coordinates))
