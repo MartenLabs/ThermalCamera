@@ -30,7 +30,7 @@
 
 - **MLX90640**
   - IR Array Thermal Imaging Camera 32×24 Pixels 110° Field of View I2C Interface 3.3V/5V
-  <img src="Readme/MLX90640.jpg" alt="drawing" width="200"/>
+  <img src="./Readme/MLX90640.jpg" alt="drawing" width="200"/>
   
 
 <br/>
@@ -126,7 +126,7 @@ text = 'Person Detected' if predictions > 0.5 else 'No Person'
 
 with human data (24 x 32)
 
-<img src="Readme/withperson.png" alt="drawing" width="400"/>
+<img src="./Readme/withperson.png" alt="drawing" width="400"/>
 
 <br/>
 <br/>
@@ -134,7 +134,7 @@ with human data (24 x 32)
 
 without human data (24 x 32)
 
-<img src="Readme/withoutpserson.png" alt="drawing" width="400"/>
+<img src="./Readme/withoutpserson.png" alt="drawing" width="400"/>
 
 
 ## 6. 사용한 학습 모델
@@ -179,7 +179,7 @@ Test accuracy: 1.0
 
 ## 7. 1차 학습 결과
 
-![](Result/v1_CNN/1차_CNN.gif)
+![](./Result/v1_CNN/1차_CNN.gif)
 
 
 <br/>
@@ -462,7 +462,7 @@ Epoch 100/1000
 
 <br/>
 
-![](Result/v2_RetinaNet/2차_RetinaNet.gif)
+![](./Result/v2_RetinaNet/2차_RetinaNet.gif)
 
 <br/>
 <br/>
@@ -633,7 +633,7 @@ OK (skipped=1)
 
 에어컨 옆 또는 전등 주변, 창문 근처에서 필터가 재기능을 못하는 현상이 발견되어 Auto-Encoder 모델로 필터 재설계 
 
-  <img src="Readme/FilterError.gif" alt="drawing" width="500"/>
+  <img src="./Readme/FilterError.gif" alt="drawing" width="500"/>
 
 <br/>
 <br/>
@@ -715,7 +715,7 @@ _________________________________________________________________
 Original Data(위)  (24 x 32)
 
 
-<img src="Readme/AutoEncoder_Datasets.png" alt="drawing" width="400"/>
+<img src="./Readme/AutoEncoder_Datasets.png" alt="drawing" width="400"/>
 
 Segmentation Data(아래) (24 x 32)        
 
@@ -724,7 +724,7 @@ Segmentation Data(아래) (24 x 32)
 
 ## 4. 결과
 
-<img src="Readme/AutoEncoder_filter.png" alt="drawing" width="500"/>
+<img src="./Readme/AutoEncoder_filter.png" alt="drawing" width="500"/>
 
 
 
