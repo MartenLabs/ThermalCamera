@@ -37,6 +37,7 @@ data_array = np.array(data_list)
 # 배열을 원하는 형태로 재구성
 reshaped_data = data_array.reshape((24, 32, 1))
 
+print(reshaped_data.shape)
 # 이미지 표시
 plt.imshow(reshaped_data)
 plt.show()
