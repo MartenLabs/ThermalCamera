@@ -18,9 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "crc.h"
 #include "i2c.h"
 #include "usart.h"
 #include "gpio.h"
+#include "app_x-cube-ai.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,11 +58,18 @@
 #define	 RefreshRate FPS16HZ
 #define  TA_SHIFT 8 //Default shift for MLX90640 in open air
 
+#define THERMAL_CAMERA_ROWS 24
+#define THERMAL_CAMERA_COLS 32
+uint8_t ai_input_data[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS][1];
+
 static uint16_t eeMLX90640[832];
 static float mlx90640To[768];
 uint16_t frame[834];
 float emissivity=0.95;
 int status;
+
+
+//uint8_t ai_input_data[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS][1];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,6 +92,13 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
+/* Enable the CPU Cache */
+
+  /* Enable I-Cache---------------------------------------------------------*/
+  SCB_EnableICache();
+
+  /* Enable D-Cache---------------------------------------------------------*/
+  SCB_EnableDCache();
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -104,6 +120,8 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_USART3_UART_Init();
+  MX_CRC_Init();
+  MX_X_CUBE_AI_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -128,81 +146,54 @@ int main(void)
 	  		float vdd = MLX90640_GetVdd(frame, &mlx90640);
 	  		float Ta = MLX90640_GetTa(frame, &mlx90640);
 
-	  		float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-	  		printf("vdd:  %f Tr: %f\r\n",vdd,tr);
+	  		float tr = Ta - TA_SHIFT;
 	  		MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
 
-//	  		char uartBuffer[100]; // UART 전송을 위한 버퍼
-//	  		int idx; // 현재 버퍼의 인덱스
-//
-//	  		for(int i = 0; i < 768; i++) {
-//	  		    if(i % 32 == 0 && i != 0) {
-//	  		        // 줄바꿈 문자 추가
-//	  		        idx += snprintf(&uartBuffer[idx], sizeof(uartBuffer) - idx, "\r\n");
-//	  		        // UART 전송
-//	  		        HAL_UART_Transmit(&huart3, (uint8_t*)uartBuffer, strlen(uartBuffer), HAL_MAX_DELAY);
-//	  		        idx = 0; // 버퍼 인덱스 초기화
-//	  		    }
-//	  		    // 온도 값을 문자열로 변환하고 버퍼에 추가
-//	  		    idx += snprintf(&uartBuffer[idx], sizeof(uartBuffer) - idx, "%2.2f ", mlx90640To[i]);
-//	  		}
-//
-//	  		// 마지막 데이터 전송
-//	  		HAL_UART_Transmit(&huart3, (uint8_t*)uartBuffer, strlen(uartBuffer), HAL_MAX_DELAY);
-//
-//	  		HAL_Delay(500);
+	  			float minTemp = FLT_MAX;
+	  		    float maxTemp = -FLT_MAX;
+
+	  		    for(int i = 0; i < 768; i++) {
+	  		        if(mlx90640To[i] < minTemp) minTemp = mlx90640To[i];
+	  		        if(mlx90640To[i] > maxTemp) maxTemp = mlx90640To[i];
+	  		    }
 
 
-	  		// 데이터셋의 최소값과 최대값 찾기
-	  		float minTemp = FLT_MAX;
-	  		float maxTemp = -FLT_MAX;
+	  		    for(int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
+	  		        for(int j = 0; j < THERMAL_CAMERA_COLS; j++) {
+	  		            float temp = mlx90640To[i * THERMAL_CAMERA_COLS + j];
+	  		            uint8_t scaledTemp = (uint8_t)((temp - minTemp) / (maxTemp - minTemp) * 255.0);
 
-	  		for(int i = 0; i < 768; i++) {
-	  		    if(mlx90640To[i] < minTemp) minTemp = mlx90640To[i];
-	  		    if(mlx90640To[i] > maxTemp) maxTemp = mlx90640To[i];
-	  		}
-
-	  		char uartBuffer[32 * 6 + 2]; // 충분히 큰 버퍼를 할당
-	  		int idx = 0; // 버퍼 인덱스
-
-	  		// 데이터 정규화 및 UART 전송
-	  		for(int i = 0; i < 768; i++) {
-	  		    if(i % 32 == 0) {
-	  		        if(i != 0) {
-	  		            // 줄바꿈 문자 추가 및 UART 전송
-	  		            uartBuffer[idx++] = '\r';
-	  		            uartBuffer[idx++] = '\n';
-	  		            HAL_UART_Transmit(&huart3, (uint8_t*)uartBuffer, idx, HAL_MAX_DELAY);
-	  		            idx = 0; // 버퍼 인덱스 초기화
-	  		        } else {
-	  		            // 시작 신호 추가
-	  		            const char* startSignal = "start ";
-	  		            idx += snprintf(&uartBuffer[idx], sizeof(uartBuffer) - idx, "%s", startSignal);
+	  		            ai_input_data[i][j][0] = scaledTemp;
 	  		        }
 	  		    }
 
-	  		    // 온도 값을 0-255 범위로 정규화
-	  		    uint8_t scaledTemp = (uint8_t)((mlx90640To[i] - minTemp) / (maxTemp - minTemp) * 255.0);
 
-	  		    // 정규화된 온도 값을 문자열로 변환하고 버퍼에 추가
-	  		    idx += snprintf(&uartBuffer[idx], sizeof(uartBuffer) - idx, "%u ", scaledTemp);
-	  		}
+//	  		  	  		  char buffer[100];
+//
+//	  		  	  		     for(int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
+//	  		  	  		         int idx = 0;
+//	  		  	  		         for(int j = 0; j < THERMAL_CAMERA_COLS; j++) {
+//	  		  	  		             idx += snprintf(&buffer[idx], sizeof(buffer) - idx, "%u ", ai_input_data[i][j][0]);
+//	  		  	  		             if (idx >= sizeof(buffer) - 5) {
+//	  		  	  		            	 HAL_UART_Transmit(&huart3, (uint8_t*)buffer, idx, HAL_MAX_DELAY);
+//	  		  	  		                 idx = 0;
+//	  		  	  		             }
+//	  		  	  		         }
+//	  		  	  		         buffer[idx++] = '\r';
+//	  		  	  		         buffer[idx++] = '\n';
+//	  		  	  		         HAL_UART_Transmit(&huart3, (uint8_t*)buffer, idx, HAL_MAX_DELAY);
+//	  		  	  		     }
 
-	  		if(idx > 0) {
-	  		    // 종료 신호 추가
-	  		    const char* endSignal = " end";
-	  		    idx += snprintf(&uartBuffer[idx], sizeof(uartBuffer) - idx, "%s", endSignal);
 
-	  		    // 마지막 데이터 전송
-	  		    HAL_UART_Transmit(&huart3, (uint8_t*)uartBuffer, idx, HAL_MAX_DELAY);
-	  		}
 
-	  		HAL_Delay(5000);
-
+//	  		  acquire_and_process_data(ai_input_data);
 
     /* USER CODE END WHILE */
 
+  MX_X_CUBE_AI_Process();
     /* USER CODE BEGIN 3 */
+
+//  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
@@ -225,7 +216,7 @@ void SystemClock_Config(void)
   * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
