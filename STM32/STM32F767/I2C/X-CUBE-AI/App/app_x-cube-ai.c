@@ -173,7 +173,7 @@ static int ai_run(void)
 }
 
 /* USER CODE BEGIN 2 */
-int acquire_and_process_data(ai_i8* data[])
+int acquire_and_process_data(ai_float* data[])
 {
   /* fill the inputs of the c-model
   for (int idx=0; idx < AI_NETWORK_IN_NUM; idx++ )
@@ -194,7 +194,7 @@ void UART_Transmit(const char *str)
     }
 }
 
-int post_process(ai_i8* data[])
+int post_process(ai_float* data[])
 {
   /* process the predictions
   for (int idx=0; idx < AI_NETWORK_OUT_NUM; idx++ )
@@ -202,18 +202,67 @@ int post_process(ai_i8* data[])
       data[idx] = ....
   }
   */
+	uint8_t number = 0;
 	float* output_data = (float*)data[0];
-	char result_str[100];  // 충분?�� ?��기로 버퍼�?????? ?��?��
-	    sprintf(result_str, "Results: %.3f, %.3f, %.3f, %.3f, %.3f\n\r",
-	            output_data[0], output_data[1], output_data[2], output_data[3], output_data[4]);
 
-	    // UART�?????? ?��?�� 결과 ?��?��
+	number = argmax(output_data);
+	char result_str[100];  // 충분?�� ?��기로 버퍼�???????????????? ?��?��
+
+//	    sprintf(result_str, "Results: %.3f, %.3f, %.3f, %.3f, %.3f\n\r",
+//	            output_data[0], output_data[1], output_data[2], output_data[3], output_data[4]);
+	sprintf(result_str, "Results: %d\n\r",number);
+
 	    UART_Transmit(result_str);
+
 
   return 0;
 }
 
+int argmax(float* output_data)
+{
+	int max_idx = 0;
+	for(int i = 0; i < 5; i++){
+		if(output_data[i] > output_data[max_idx]) max_idx = i;
+	}
+	led(max_idx);
+//	return 4 - max_idx;;
+	return max_idx;
+}
 
+void led(int idx){
+	switch(idx){
+	case 0:
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+		break;
+	case 1:
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+		break;
+	case 2:
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+		break;
+	case 3:
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+		break;
+	case 4:
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+		break;
+	default:
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+		break;
+	}
+}
 
 /* USER CODE END 2 */
 
