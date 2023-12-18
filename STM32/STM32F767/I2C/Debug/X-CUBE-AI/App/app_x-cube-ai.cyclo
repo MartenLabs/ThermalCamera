@@ -2,9 +2,9 @@
 ../X-CUBE-AI/App/app_x-cube-ai.c:118:12:ai_boostrap	4
 ../X-CUBE-AI/App/app_x-cube-ai.c:161:12:ai_run	2
 ../X-CUBE-AI/App/app_x-cube-ai.c:176:5:acquire_and_process_data	1
-../X-CUBE-AI/App/app_x-cube-ai.c:189:6:UART_Transmit	2
-../X-CUBE-AI/App/app_x-cube-ai.c:197:5:post_process	1
-../X-CUBE-AI/App/app_x-cube-ai.c:221:5:argmax	3
-../X-CUBE-AI/App/app_x-cube-ai.c:232:6:led	6
-../X-CUBE-AI/App/app_x-cube-ai.c:271:6:MX_X_CUBE_AI_Init	1
-../X-CUBE-AI/App/app_x-cube-ai.c:280:6:MX_X_CUBE_AI_Process	5
+../X-CUBE-AI/App/app_x-cube-ai.c:198:6:UART_Transmit	2
+../X-CUBE-AI/App/app_x-cube-ai.c:206:5:post_process	1
+../X-CUBE-AI/App/app_x-cube-ai.c:230:5:argmax	3
+../X-CUBE-AI/App/app_x-cube-ai.c:241:6:led	6
+../X-CUBE-AI/App/app_x-cube-ai.c:280:6:MX_X_CUBE_AI_Init	1
+../X-CUBE-AI/App/app_x-cube-ai.c:289:6:MX_X_CUBE_AI_Process	5

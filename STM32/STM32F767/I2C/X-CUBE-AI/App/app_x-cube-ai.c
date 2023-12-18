@@ -183,6 +183,15 @@ int acquire_and_process_data(ai_float* data[])
 
   */
 	memcpy(data[0], ai_input_data, sizeof(ai_input_data));
+//	if (memcmp(ai_input_data, data[0], sizeof(ai_input_data)) == 0) {
+//		uint8_t msg_success[] = "1";
+//		HAL_UART_Transmit(&huart3, msg_success, strlen((char*)msg_success), 1000);
+//	} else {
+//
+//		uint8_t msg_success[] = "0";
+//		HAL_UART_Transmit(&huart3, msg_success, strlen((char*)msg_success), 1000);
+//	}
+
   return 0;
 }
 
@@ -190,7 +199,7 @@ void UART_Transmit(const char *str)
 {
     if (str != NULL)
     {
-        HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen(str), 1000);  // huart3?�� UART ?��?��
+        HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen(str), 1000);
     }
 }
 
@@ -206,13 +215,13 @@ int post_process(ai_float* data[])
 	float* output_data = (float*)data[0];
 
 	number = argmax(output_data);
-	char result_str[100];  // 충분?�� ?��기로 버퍼�???????????????? ?��?��
+//	char result_str[100];
 
 //	    sprintf(result_str, "Results: %.3f, %.3f, %.3f, %.3f, %.3f\n\r",
 //	            output_data[0], output_data[1], output_data[2], output_data[3], output_data[4]);
-	sprintf(result_str, "Results: %d\n\r",number);
 
-	    UART_Transmit(result_str);
+//	sprintf(result_str, "\nResults: %d\n\r",number);
+//	    UART_Transmit(result_str);
 
 
   return 0;

@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include "MLX90640_API.h"
 #include <float.h>
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,8 +61,13 @@
 
 #define THERMAL_CAMERA_ROWS 24
 #define THERMAL_CAMERA_COLS 32
-float ai_input_data[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS][1];
 
+#define REDUCED_ROWS 12
+#define REDUCED_COLS 16
+
+float ai_input_data[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS][1];
+float input_data[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS][1];
+float output_data[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS][1];
 static uint16_t eeMLX90640[832];
 static float mlx90640To[768];
 uint16_t frame[834];
@@ -127,6 +133,7 @@ int main(void)
 
   MLX90640_SetRefreshRate(MLX90640_ADDR, RefreshRate);
   MLX90640_SetChessMode(MLX90640_ADDR);
+
   paramsMLX90640 mlx90640;
   status = MLX90640_DumpEE(MLX90640_ADDR, eeMLX90640);
   if (status != 0) printf("\r\nload system parameters error with code:%d\r\n",status);
@@ -138,16 +145,57 @@ int main(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+
+  void bilinear_interpolation(float input[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS],
+                              float output[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS]) {
+      for (int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
+          for (int j = 0; j < THERMAL_CAMERA_COLS; j++) {
+              float top = (i == 0) ? input[i][j] : input[i - 1][j];
+              float bottom = (i == THERMAL_CAMERA_ROWS - 1) ? input[i][j] : input[i + 1][j];
+              float left = (j == 0) ? input[i][j] : input[i][j - 1];
+              float right = (j == THERMAL_CAMERA_COLS - 1) ? input[i][j] : input[i][j + 1];
+
+              output[i][j] = (top + bottom + left + right) / 4.0;
+          }
+      }
+  }
+
+  void downscale_and_upscale(float input[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS],
+                             float output[THERMAL_CAMERA_ROWS][THERMAL_CAMERA_COLS]) {
+      float temp[REDUCED_ROWS][REDUCED_COLS];
+
+
+      for (int i = 0; i < REDUCED_ROWS; i++) {
+          for (int j = 0; j < REDUCED_COLS; j++) {
+              float sum = input[i*2][j*2] + input[i*2][j*2+1] +
+                          input[i*2+1][j*2] + input[i*2+1][j*2+1];
+              temp[i][j] = sum / 4.0;
+          }
+      }
+
+
+      for (int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
+          for (int j = 0; j < THERMAL_CAMERA_COLS; j++) {
+              output[i][j] = temp[i/2][j/2];
+          }
+      }
+  }
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+
+	  for (uint8_t page = 0; page < 2; page++)
+	  {
+		  status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+	  }
 	  if (status < 0)
 	  {
-	  	printf("GetFrame Error: %d\r\n",status);
+		  printf("status error");
 	  }
 //	  		float vdd = MLX90640_GetVdd(frame, &mlx90640);
 //	  		float Ta = MLX90640_GetTa(frame, &mlx90640);
@@ -172,45 +220,55 @@ int main(void)
 //	  		            ai_input_data[i][j][0] = scaledTemp;
 //	  		        }
 //	  		    }
+	  else{
 
-	  float vdd = MLX90640_GetVdd(frame, &mlx90640);
-	  float Ta = MLX90640_GetTa(frame, &mlx90640);
 
-	  float tr = Ta - TA_SHIFT;
-	  MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
 
-	  float minTemp = FLT_MAX;
-	  float maxTemp = -FLT_MAX;
+		  float vdd = MLX90640_GetVdd(frame, &mlx90640);
+		  float Ta = MLX90640_GetTa(frame, &mlx90640);
 
-	  for(int i = 0; i < 768; i++) {
-	      if(mlx90640To[i] < minTemp) minTemp = mlx90640To[i];
-	      if(mlx90640To[i] > maxTemp) maxTemp = mlx90640To[i];
-	  }
+		  float tr = Ta - TA_SHIFT;
+		  MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
+		  MLX90640_BadPixelsCorrection((&mlx90640)->brokenPixels, mlx90640To, 0, &mlx90640);
+		  MLX90640_BadPixelsCorrection((&mlx90640)->outlierPixels, mlx90640To, 0, &mlx90640);
+		  float minTemp = FLT_MAX;
+		  float maxTemp = -FLT_MAX;
 
-	  for(int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
-	      for(int j = 0; j < THERMAL_CAMERA_COLS; j++) {
-	          float temp = mlx90640To[i * THERMAL_CAMERA_COLS + j];
-	          float scaledTemp = (temp - minTemp) / (maxTemp - minTemp); // ï¿??ê²½ëœ ï¿??ï¿??
+		  for(int i = 0; i < 768; i++) {
+		      if(mlx90640To[i] < minTemp) minTemp = mlx90640To[i];
+		      if(mlx90640To[i] > maxTemp) maxTemp = mlx90640To[i];
+		  }
 
-	          ai_input_data[i][j][0] = scaledTemp;
-	      }
-	  }
+		  for(int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
+		      for(int j = 0; j < THERMAL_CAMERA_COLS; j++) {
+		          float temp = mlx90640To[i * THERMAL_CAMERA_COLS + j];
+		          float scaledTemp = (temp - minTemp) / (maxTemp - minTemp);
 
-	  char buffer[100];
+		          ai_input_data[i][j][0] = scaledTemp;
+		      }
+		  }
 
-	  for(int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
-	      int idx = 0;
-	      for(int j = 0; j < THERMAL_CAMERA_COLS; j++) {
-	          idx += snprintf(&buffer[idx], sizeof(buffer) - idx, "%.2f ", ai_input_data[i][j][0]); // ï¿??ê²½ëœ ï¿??ï¿??
-	          if (idx >= sizeof(buffer) - 5) {
-	              HAL_UART_Transmit(&huart3, (uint8_t*)buffer, idx, HAL_MAX_DELAY);
-	              idx = 0;
-	          }
-	      }
-	      buffer[idx++] = '\r';
-	      buffer[idx++] = '\n';
-	      HAL_UART_Transmit(&huart3, (uint8_t*)buffer, idx, HAL_MAX_DELAY);
-	  }
+
+//		  		bilinear_interpolation(input_data, ai_input_data);
+//		  		downscale_and_upscale(ai_input_data, output_data);
+
+
+//		  	  char buffer[100];
+//
+//		  	  for(int i = 0; i < THERMAL_CAMERA_ROWS; i++) {
+//		  	      int idx = 0;
+//		  	      for(int j = 0; j < THERMAL_CAMERA_COLS; j++) {
+//		  	          idx += snprintf(&buffer[idx], sizeof(buffer) - idx, "%.2f ", ai_input_data[i][j][0]);
+//		  	          if (idx >= sizeof(buffer) - 5) {
+//		  	              HAL_UART_Transmit(&huart3, (uint8_t*)buffer, idx, HAL_MAX_DELAY);
+//		  	              idx = 0;
+//		  	          }
+//		  	      }
+//		  	      buffer[idx++] = '\r';
+//		  	      buffer[idx++] = '\n';
+//		  	      HAL_UART_Transmit(&huart3, (uint8_t*)buffer, idx, HAL_MAX_DELAY);
+//		  	  }
+
 
 //	  int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
 //	  if (status < 0) {
@@ -267,8 +325,7 @@ int main(void)
 
   MX_X_CUBE_AI_Process();
     /* USER CODE BEGIN 3 */
-  HAL_Delay(1000);
-//  HAL_Delay(1000);
+	  }
   }
   /* USER CODE END 3 */
 }
