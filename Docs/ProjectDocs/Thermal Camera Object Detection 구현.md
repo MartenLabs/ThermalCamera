@@ -32,16 +32,19 @@ coordinates = np.concatenate([d1o_coordinates, d2o_coordinates, d1h_coordinates,
 ```
 
 
+
 ### 2. 데이터 확인
 ``` python
+origin_images = origin_images.reshape(origin_images.shape[0], 24, 32, 1)
+
 copy_coord = coordinates[13000]
 
 new_coords = []
 changed_coords = []
 for i in range(copy_coord.shape[0]):
     copy_coord[i]
-    x_coords = copy_coord[i][0::2]
-    y_coords = copy_coord[i][1::2]
+    x_coords = copy_coord[i][0::2] / origin_images.shape[2]
+    y_coords = copy_coord[i][1::2] / origin_images.shape[1]
 
     xmin, xmax = min(x_coords), max(x_coords)
     ymin, ymax = min(y_coords), max(y_coords)
@@ -59,16 +62,15 @@ print(boxes)
 ```
 
 ``` python
-plt.figure(figsize = (8, 8))
 plt.axis('off')
 plt.imshow(origin_images[13000])
 ax = plt.gca()
 boxes = tf.stack(
 	[
-	 boxes[:, 0],
-	 boxes[:, 1],
-	 boxes[:, 2],
-	 boxes[:, 3]
+	 boxes[:, 0] * origin_images.shape[2],
+	 boxes[:, 1] * origin_images.shape[1],
+	 boxes[:, 2] * origin_images.shape[2],
+	 boxes[:, 3] * origin_images.shape[1]
 	], axis = -1
 )
 for box in boxes:
@@ -84,14 +86,14 @@ plt.show()
 
 
 
-### 3. 데이터 변환 
+### 3. 데이터 전처리
 ``` python
 bboxes = []
 for coords in coordinates:
     new_coords = []  # 각 coords 집합에 대해 new_coords를 초기화
     for i in range(coords.shape[0]):
-        x_coords = coords[i][0::2]
-        y_coords = coords[i][1::2]
+        x_coords = coords[i][0::2] / origin_images.shape[2]
+        y_coords = coords[i][1::2] / origin_images.shape[1]
 
         xmin, xmax = min(x_coords), max(x_coords)
         ymin, ymax = min(y_coords), max(y_coords)
@@ -121,10 +123,10 @@ for img, boxes in zip(origin_images[-10:], bboxes[-10:]):
     ax = plt.gca()
     boxes = tf.stack(
     	[
-    	 boxes[:, 0],
-    	 boxes[:, 1],
-    	 boxes[:, 2],
-    	 boxes[:, 3]
+    	 boxes[:, 0] * origin_images.shape[2],
+    	 boxes[:, 1] * origin_images.shape[1],
+    	 boxes[:, 2] * origin_images.shape[2],
+    	 boxes[:, 3] * origin_images.shape[1]
     	], axis = -1
     )
     
@@ -149,26 +151,64 @@ np.savez('npz/ObjectDetection.npz', images=origin_images, numbers=numbers_labels
 
 
 
-# 1. npz to tfr
+# 1. 데이터 전처리
 
-### 1. 데이터 로드
+### 1. 데이터 로드 및 데이터 추가
 ``` python
 import numpy as np
 
 datasets = np.load('npz/ObjectDetection.npz', allow_pickle=True)
 images, numbers, bboxes = datasets['images'], datasets['numbers'], datasets['bboxes']
+
+cls = []
+for i in numbers:
+	label = 1 if i != 0 else 0
+	cls.append(label)
+cls = np.array(cls)
+
+dataset = {
+	'images' : images,
+	'numbers' : numbers,
+	'bboxes' : bboxes,
+	'cls' : cls
+}
+
+print(dataset['images'].shape)
+print(dataset['numbers'].shape)
+print(dataset['bboxes'].shape)
+print(dataset['cls'].shape)
+
+
+"""
+(13276, 24, 32, 1) 
+(13276,) 
+(13276, 4, 4) 
+(13276,)
+"""
 ```
 
 
 ### 2. 데이터 확인
 ``` python
 import matplotlib.pyplot as plt
+import tensorflow as tf
+images = dataset['images']
+numbers =dataset['numbers']
+bboxes = dataset['bboxes']
+cls = dataset['cls']
 
 boxes = bboxes[9000]
 plt.figure(figsize = (8, 8))
 plt.axis('off')
 plt.imshow(images[9000])
 ax = plt.gca()
+boxes = tf.stack([
+	boxes[:, 0] * images.shape[2],
+	boxes[:, 1] * images.shape[1],
+	boxes[:, 2] * images.shape[2],
+	boxes[:, 3] * images.shape[1]], axis = -1
+)
+    
 
 for box in boxes:
 	xmin, ymin = box[:2]
@@ -183,7 +223,7 @@ plt.show()
 
 
 
-### 3. 데이터 변환 및 저장
+### 3. 데이터 변환
 ``` python
 import os
 import random
@@ -196,161 +236,16 @@ N_TRAIN = int(images.shape[0] * 0.7)
 N_VAL = images.shape[0] - N_TRAIN
 LOG_DIR = 'ObjectDetectionLog'
 
+cur_dir = os.getcwd()
+tfr_dir = os.path.join(cur_dir, 'tfrecord/ObjectDetection')
+os.makedirs(tfr_dir, exist_ok=True)
+
 print("IMG_SIZE_WIDTH:  ", IMG_SIZE_WIDTH)
 print("IMG_SIZE_HEIGHT: ", IMG_SIZE_HEIGHT)
 print("N_DATA:          ", N_DATA)
 print("N_TRAIN:         ", N_TRAIN)
 print("N_VAL:           ", N_VAL)
-
-
-shuffle_list = list(range(N_DATA))
-random.shuffle(shuffle_list)
-
-train_idx_list = shuffle_list[:N_TRAIN]
-val_idx_list = shuffle_list[N_TRAIN:]
-
-cur_dir = os.getcwd()
-tfr_dir = os.path.join(cur_dir, 'tfrecord/ObjectDetection')
-os.makedirs(tfr_dir, exist_ok=True)
-
-tfr_train_dir = os.path.join(tfr_dir, 'od_train.tfr')
-tfr_val_dir = os.path.join(tfr_dir, 'od_val.tfr')
-
-writer_train = tf.io.TFRecordWriter(tfr_train_dir)
-writer_val = tf.io.TFRecordWriter(tfr_val_dir)
 ```
-
-``` python
-def _bytes_feature(value):
-    if isinstance(value, type(tf.constant(0))):
-        value = value.numpy()
-    return tf.train.Feature(bytes_list = tf.train.BytesList(value = [value]))
-
-def _float_feature(value):
-    return tf.train.Feature(float_list = tf.train.FloatList(value = value))
-
-def _int64_feature(value):
-    return tf.train.Feature(int64_list = tf.train.Int64List(value = [value]))
-```
-
-``` python
-for idx in train_idx_list: # val_idx_list도 동일
-    bbox = bboxes[idx]
-    xmin, ymin, xmax, ymax = bbox[:, 0], bbox[:, 1], bbox[:, 2], bbox[:, 3]
-
-    xmin = xmin / IMG_SIZE_WIDTH
-    ymin = ymin / IMG_SIZE_HEIGHT
-    xmax = xmax / IMG_SIZE_WIDTH
-    ymax = ymax / IMG_SIZE_HEIGHT
-
-    bbox = np.stack([xmin, ymin, xmax, ymax], axis=-1).flatten()
-
-    image = images[idx]
-    bimage = image.tobytes()
-
-    number = numbers[idx]
-    label = 1 if number != 0 else 0    
-    
-    example = tf.train.Example(features = tf.train.Features(feature = {
-        'image': _bytes_feature(bimage),
-        'bbox': _float_feature(bbox),
-        'count': _int64_feature(number),
-        'label':_int64_feature(label)
-    }))
-    
-    writer_train.write(example.SerializeToString())
-writer_train.close()
-```
-
-
-
-### 4. 저장 데이터 확인
-``` python
-AUTOTUNE = tf.data.AUTOTUNE
-
-RES_HEIGHT =24
-RES_WIDTH = 32
-N_EPOCHS = 100
-N_BATCH = 8
-LR = 0.0005
-
-
-def _parse_function(tfrecord_serialized):
-    features = {
-        'image': tf.io.FixedLenFeature([], tf.string),
-        'bbox': tf.io.VarLenFeature(tf.float32),  # VarLenFeature로 변경
-        'count': tf.io.FixedLenFeature([], tf.int64),
-        'label': tf.io.FixedLenFeature([], tf.int64)
-    }
-
-    parsed_features = tf.io.parse_single_example(tfrecord_serialized, features)
-
-    image = tf.io.decode_raw(parsed_features['image'], tf.uint8)
-    image = tf.reshape(image, [RES_HEIGHT, RES_WIDTH, 1])
-    image = tf.cast(image, tf.float32) / 255.0
-
-    bbox = tf.sparse.to_dense(parsed_features['bbox'])  # 변환 필요
-    bbox = tf.cast(bbox, tf.float32)
-    num_boxes = tf.shape(bbox)[0] // 4
-    bbox = tf.reshape(bbox, [num_boxes, 4])
-
-    count = tf.cast(parsed_features['count'], tf.int64)
-    label = tf.cast(parsed_features['label'], tf.int64)
-
-    return image, bbox, count, label
-
-
-train_dataset = tf.data.TFRecordDataset(tfr_train_dir)
-train_dataset = train_dataset.map(_parse_function, num_parallel_calls=AUTOTUNE)
-train_dataset = train_dataset.shuffle(buffer_size=N_TRAIN).prefetch(AUTOTUNE).batch(N_BATCH, drop_remainder=True)
-
-val_dataset = tf.data.TFRecordDataset(tfr_val_dir)
-val_dataset = val_dataset.map(_parse_function, num_parallel_calls=AUTOTUNE).batch(N_BATCH, drop_remainder=True)
-```
-
-
-### 5. 데이터 확인
-``` python
-import matplotlib.pyplot as plt
-
-for image, bbox, count, label in val_dataset.take(5):
-    image = image[0].numpy()
-    bbox = bbox[0]
-    count = count[0]
-    label = label[0]
-
-    plt.figure(figsize = (8, 8))
-    plt.axis('off')
-    plt.imshow(image)
-    ax = plt.gca()  
-
-    image_h = image.shape[0]    
-    image_w = image.shape[1]
-
-    boxes = tf.stack(
-    	[
-    	 bbox[:, 0] * image_w,
-    	 bbox[:, 1] * image_h,
-    	 bbox[:, 2] * image_w,
-    	 bbox[:, 3] * image_h
-    	], axis = -1
-    )
-
-    for box in boxes:
-        xmin, ymin = box[:2]
-        w, h = box[2:] - box[:2]
-        patch = plt.Rectangle(
-            [xmin, ymin], w, h, fill = False, edgecolor = [1, 0, 0], linewidth = 2
-        )
-        ax.add_patch(patch)
-    plt.show()
-    print(count, label)
-    
-    """
-    tf.Tensor(3, shape=(), dtype=int64) tf.Tensor(1, shape=(), dtype=int64)
-    """
-```
-![](Data/imgs/ObjectDetection/3.png)
 
 
 ---
@@ -358,3 +253,200 @@ for image, bbox, count, label in val_dataset.take(5):
 
 # Data Augmentation
 
+### 1. 이미지 크기 변경
+``` python
+def resize_and_pad_image(image, ratio = 3, stride = 8):
+    image_shape = tf.cast(tf.shape(image)[:2], dtype = tf.float32)
+    
+    image_shape = ratio * image_shape
+    image = tf.image.resize(image, tf.cast(image_shape, dtype = tf.int32))
+
+    padded_image_shape = tf.cast(
+        tf.math.ceil(image_shape / stride) * stride, dtype = tf.int32
+    )
+
+    image = tf.image.pad_to_bounding_box(
+        image, 0, 0, padded_image_shape[0], padded_image_shape[1]
+    )
+
+    return image, image_shape, ratio
+```
+
+
+
+### 2. 데이터 전처리 
+``` python
+def preprocess_data(sample):
+    image = sample["images"]
+    bbox = sample["bboxes"]
+    class_id = tf.cast(sample["cls"], dtype = tf.int32)
+
+    image, image_shape, _ = resize_and_pad_image(image)
+    bbox = tf.stack([
+        bbox[:, 0] * image_shape[1],
+        bbox[:, 1] * image_shape[0],
+        bbox[:, 2] * image_shape[1],
+        bbox[:, 3] * image_shape[0]],
+        axis = -1
+    )
+
+    return image, bbox, class_id
+```
+
+
+
+### 3. stride 확인 
+``` python
+import numpy as np
+import matplotlib.pyplot as plt
+
+img = images[9000]
+num = numbers[9000]
+bb = bboxes[9000]
+cs = cls[9000]
+sample = {
+    'images' : img,
+    'numbers' : num,
+    'bboxes' : bb,
+    'cls' : cs
+}
+
+img, _, _ = preprocess_data(sample)
+print(img.shape) # (72, 96, 1)
+
+anchor_img = np.zeros((*img.shape[:2], 3), dtype=np.uint8)
+print(anchor_img.shape)
+
+strides = [2, 4, 8]
+colors = {
+    2: [0, 0, 255],  # 파란색
+    4: [255, 0, 0],  # 빨간색
+    8:[255, 255, 0]  # 노란색
+}
+
+for stride in strides:
+    color = colors[stride]
+    for y in range(0, anchor_img.shape[0], stride):
+        for x in range(0, anchor_img.shape[1], stride):
+            anchor_img[y, x, :] = color
+
+plt.imshow(img, alpha=1)  
+plt.imshow(anchor_img, alpha=0.5) 
+plt.axis('off')
+plt.show()
+```
+![](Data/imgs/ObjectDetection/4.png)
+
+
+### 4. Area, Ratio, Height, Width 확인
+``` python
+import math
+ratios = [0.5, 1.0, 2.0]
+areas = [16, 64, 256]
+
+for area in areas:
+    for ratio in ratios:
+        H = math.sqrt(area / ratio)
+        W = area / H
+        print(f'Area: {area}')
+        print(f'Ratio: {ratio}')
+        print(f'Height: {H}\nWidth: {W}\n')
+    
+
+"""
+Area: 16
+Ratio: 0.5
+Height: 5.656854249492381
+Width: 2.82842712474619
+
+Area: 16
+Ratio: 1.0
+Height: 4.0
+Width: 4.0
+
+Area: 16
+Ratio: 2.0
+Height: 2.8284271247461903
+Width: 5.65685424949238
+
+Area: 64
+Ratio: 0.5
+Height: 11.313708498984761
+Width: 5.65685424949238
+
+Area: 64
+Ratio: 1.0
+Height: 8.0
+Width: 8.0
+
+Area: 64
+Ratio: 2.0
+Height: 5.656854249492381
+Width: 11.31370849898476
+
+Area: 256
+Ratio: 0.5
+Height: 22.627416997969522
+Width: 11.31370849898476
+
+Area: 256
+Ratio: 1.0
+Height: 16.0
+Width: 16.0
+
+Area: 256
+Ratio: 2.0
+Height: 11.313708498984761
+Width: 22.62741699796952
+"""
+```
+
+
+
+### 5. Center 확인 
+``` python
+
+
+```
+
+
+### . AnchorBox 생성
+``` python
+class AnchorBox:
+    def __init__(self):
+        self.aspect_ratios = [0.5, 1.0, 2.0]
+        self.scales = [2** x for x in [0, 1/3, 2/3]]
+        self._num_anchors = len(self.aspect_ratios) * len(self.scales)
+        self._strides = [2 ** i for i in range(1, 4)]
+        self._areas = [x ** 2 for x in [4, 8, 16]]
+        self._anchor_dims = self._compute_dims()
+
+    def _compute_dims(self):
+        anchor_dims_all = []
+
+        for area in self._areas:
+            anchor_dims = []
+
+            for ratio in self.aspect_ratios: 
+                anchor_height = tf.math.squrt(area / ratio)
+                anchor_width = area / anchor_height
+
+                dims = tf.reshape(
+                    tf.stack([anchor_width, anchor_height], axis = -1)
+                )
+
+                for scale in self.scales: 
+                    anchor_dims.append(scale * dims) 
+        
+            anchor_dims_all.append(tf.stack(anchor_dims), axis = -2)
+        return anchor_dims_all 
+    
+    def _get_anchors(self, feature_height, feature_widht, level):
+        rx = tf.range(feature_widht, dtype = tf.float32) + 0.5
+        ry = tf.range(feature_height, dtype = tf.foat32) + 0.5
+
+        centers = tf.stack(tf.meshgrid(rx, ry), axis = -1) * self._strides[level -3]
+
+        centers = tf.expand_dims(centers, axis = -2)
+        centers = tf.tile(centers, [1, 1, self._num_anchors, 1])
+```
