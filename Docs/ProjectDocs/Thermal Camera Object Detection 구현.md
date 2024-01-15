@@ -450,3 +450,4 @@ class AnchorBox:
         centers = tf.expand_dims(centers, axis = -2)
         centers = tf.tile(centers, [1, 1, self._num_anchors, 1])
 ```
+
