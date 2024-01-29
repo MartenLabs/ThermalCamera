@@ -606,3 +606,31 @@ print(avg_iou)
 ```
 
 
+
+`compute_iou` 함수는 두 세트의 박스(boxes1과 boxes2) 간의 교차 영역(IoU, Intersection over Union)를 계산합니다. 각 박스는 `[x_center, y_center, width, height]` 형식으로 제공됩니다. 이 함수의 주요 단계는 다음과 같은 수식으로 표현될 수 있습니다:
+
+1. **박스 변환**: 각 박스를 `[x_center, y_center, width, height]`에서 `[x_min, y_min, x_max, y_max]` 형식으로 변환. 이 변환은 `convert_to_corners` 함수에 의해 수행
+
+1. **교차 영역 계산**:
+   - **왼쪽 상단 좌표(LU, Left Upper) 계산**: 
+     $[ LU = \max(boxes1\_corners[:2], boxes2\_corners[:2])]$
+   - **오른쪽 하단 좌표(RD, Right Down) 계산**:
+     $[ RD = \min(boxes1\_corners[2:], boxes2\_corners[2:])]$
+
+2. **교차 면적(Intersection Area) 계산**:
+   - **교차 영역의 너비와 높이 계산**:
+     $[ intersection = \max(RD - LU, 0.0) ]$
+   - **교차 면적 계산**:
+     $[ intersection\_area = intersection[:,:,0] \times intersection[:,:,1] ]$
+
+3. **각 박스의 면적 계산**:
+   - **boxes1의 면적**:
+     $[ boxes1\_area = boxes1[:, 2] \times boxes1[:, 3]]$
+   - **boxes2의 면적**:
+     $[ boxes2\_area = boxes2[:, 2] \times boxes2[:, 3] ]$
+
+4. **합집합 면적(Union Area) 계산**:
+   $[ union\_area = \max(boxes1\_area[:, None] + boxes2\_area - intersection\_area, 1e-8) ]$
+
+5. **IoU 계산**:
+   $[ IoU = \frac{intersection\_area}{union\_area} ]$
