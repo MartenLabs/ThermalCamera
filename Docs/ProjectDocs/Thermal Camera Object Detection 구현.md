@@ -86,6 +86,12 @@ plt.show()
 
 
 
+$$\text{ratio} = {\text{width} \over \text{height}}$$
+$$\text{width} = \text{height} \times \text{ratio}$$
+$$\text{area} = \text{width} \times \text{height} => \text{area} = \text{height}^2 \times \text{ratio}$$
+$$\text{anchor height} = \sqrt{\frac{\text{area}}{\text{ratio}}}$$
+$$\text{anchor width} = \frac{\text{area}}{\text{anchor height}}$$
+
 ### 3. 데이터 전처리
 ``` python
 bboxes = []
@@ -451,3 +457,119 @@ class AnchorBox:
         centers = tf.tile(centers, [1, 1, self._num_anchors, 1])
 ```
 
+
+# 데이터셋 설계 
+
+### training 
+- input 
+	- image
+	- anchor boxes
+	- target anchor box
+	- target anchor box move loc
+	- labels
+
+
+- output  
+	- target anchor boxes loc
+	- labels
+
+
+
+
+
+
+이 `LabelEncoder` 클래스는 객체 검출 모델을 위한 레이블 인코딩을 수행합니다. 주요 기능은 앵커 박스와 실제 그라운드 트루스 박스(ground truth boxes) 간의 매칭을 수행하고, 이에 따라 레이블을 생성하는 것입니다. 
+
+### 1. 앵커 박스와 Ground Truth 박스 매칭
+
+#### a. IoU 계산
+$[ \text{IoU} = \text{compute\_iou}(\text{anchor\_boxes}, \text{gt\_boxes}) ]$
+
+#### b. 최대 IoU 및 매칭 인덱스
+$[ \text{max\_iou} = \text{tf.reduce\_max}(\text{IoU}, \text{axis}=1) ]$
+$[ \text{matched\_gt\_idx} = \text{tf.argmax}(\text{IoU}, \text{axis}=1) ]$
+
+#### c. 마스크 계산
+- **Positive Mask**: 
+$[ \text{positive\_mask} = \text{tf.greater\_equal}(\text{max\_iou}, \text{match\_iou}) ]$
+- **Negative Mask**: 
+  $[ \text{negative\_mask} = \text{tf.less}(\text{max\_iou}, \text{ignore\_iou}) ]$
+- **Ignore Mask**: 
+  $[ \text{ignore\_mask} = \text{tf.logical\_not}(\text{tf.logical\_or}(\text{positive\_mask}, \text{negative\_mask})) ]$
+
+### 2. 박스 타겟 계산
+
+$[ \text{box\_target} = \frac{(\text{matched\_gt\_boxes}[:,:2] - \text{anchor\_boxes}[:,:2])}{\text{anchor\_boxes}[:,2:]} \oplus \text{tf.math.log}(\frac{\text{matched\_gt\_boxes}[:,2:]}{\text{anchor\_boxes}[:,2:]}) ]$
+$[ \text{box\_target} = \frac{\text{box target}}{\text{self.box variance}} ]$
+
+$\oplus$ = concatenation
+
+### 3. 클래스 타겟 및 최종 레이블 계산
+
+#### a. 클래스 타겟
+- **클래스 타겟**:
+  $[ \text{cls\_target} = \text{tf.where}(\text{tf.not\_equal}(\text{positive\_mask}, 1.0), -1.0, \text{matched\_gt\_cls\_ids}) ]$
+  $[ \text{cls\_target} = \text{tf.where}(\text{tf.equal}(\text{ignore\_mask}, 1.0), -2.0, \text{cls\_target}) ]$
+
+#### b. 최종 레이블
+$[ \text{label} = \text{tf.concat}([\text{box\_target}, \text{tf.expand\_dims}(\text{cls\_target}, \text{axis}=-1)], \text{axis}=-1) ]$
+
+### 4. 배치 처리
+
+각 이미지에 대해 위 과정을 반복하여 배치 레이블을 생성합니다.
+
+이 클래스와 메서드는 TensorFlow를 사용하여 객체 검출 모델의 학습을 위한 레이블을 준비하는 데 필요한 계산과정을 수행합니다. 여기서 사용된 TensorFlow 함수들(tf.reduce_max, tf.argmax, tf.where 등)은 TensorFlow의 계산 그래프를 통해 효율적으로 실행됩니다.
+
+
+
+
+
+### CustomNetBoxLoss 수식
+
+$$L(y, \hat{y}) = \sum_{i} \begin{cases} 
+  0.5 \times (y_i - \hat{y}_i)^2 & \text{if } |y_i - \hat{y}_i| < \delta \\
+  |y_i - \hat{y}_i| - 0.5 & \text{otherwise}
+\end{cases}$$
+
+
+- $y$는 실제 값(y_true)
+- $\hat{y}$는 예측 값(y_pred)
+- δ는 손실 계산에서 사용되는 임계값(self._delta)
+- $|y_i - \hat{y}_i|$는 예측 값과 실제 값의 절대 차이(absolute_difference)
+- $(y_i - \hat{y}_i)^2$는 제곱 차이(squared_difference)
+
+
+
+
+
+$$L(y, \hat{y}) = - \sum_{i} \alpha_i \times (1 - p_t)^{\gamma} \times \text{CE}(y_i, \hat{y}_i)$$
+- $y$는 실제 값(y_true)
+- $\hat{y}$​는 예측 값(y_pred)
+- $\alpha$ 는 양성 예시에 대한 가중치(self._alpha)
+- $\gamma$ 는 모델이 잘못 분류된 예시에 얼마나 집중할지 조절하는 파라미터(self._gamma)
+- $p_t$ ​는 모델의 예측 확률(probs)
+- $CE$ 는 크로스 엔트로피 손실(cross_entropy)
+
+
+
+
+
+
+$$L(y, \hat{y}) = L_{cls}(y, \hat{y}) + L_{box}(y, \hat{y})$$
+- $L_{cls}​ \text{는 클래스 분류 손실(ClassificationLoss)}$
+- $L_{box} \text{​는 박스 손실(BoxLoss)}$
+- $y$ 는 실제 값(y_true)
+- $\hat{y}$ ​는 예측 값(y_pred)
+
+
+
+
+
+$$L_{cls}(y, \hat{y}) = \frac{\sum \text{ClassificationLoss}(y_{cls}, \hat{y}_{cls})}{N}$$
+
+$$L_{box}(y, \hat{y}) = \frac{\sum \text{BoxLoss}(y_{box}, \hat{y}_{box})}{N}$$
+
+
+- $y_{cls}$ ​와 $\hat{y}_{cls}$ ​는 각각 실제 클래스 레이블과 예측된 클래스 레이블
+- $y_{box}$​와 $\hat{y}_{box}$​는 각각 실제 박스 레이블과 예측된 박스 레이블
+- $N$은 손실을 정규화하기 위한 양성 예시의 총 수
