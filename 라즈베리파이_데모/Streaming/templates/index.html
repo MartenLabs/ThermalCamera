@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        img {
+            width: 1280px;
+            height: 720px;
+        }
+    </style>
+</head>
+<body>
+    <img src="/video_feed" alt="Video Feed" width="1280" height="720">
+
+    <script>
+        function updatePeopleCount() {
+            fetch('/people_count')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('title').innerText = 'People Count: ' + data.count;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    
+        setInterval(updatePeopleCount, 60);
+    </script>
+    <h1 id="title"></h1>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Thermal Camera Stream</title>
+    <style>
+        #video {
+            width: 640px; /* 이미지 너비 조정 */
+            height: auto; /* 이미지 높이 자동 조정 */
+        }
+    </style>
+</head>
+<body>
+    <h1>Thermal Camera Stream</h1>
+    <img id="video" src="{{ url_for('video_feed') }}" alt="Video Feed" />
+    <script>
+        const image = document.getElementById('video');
+        setInterval(() => {
+            const newSrc = '{{ url_for('video_feed') }}' + '?rand=' + Math.random();
+            image.src = newSrc;
+        }, 1); // 1000ms = 1초마다 이미지 업데이트
+    </script>
+</body>
+</html> -->
