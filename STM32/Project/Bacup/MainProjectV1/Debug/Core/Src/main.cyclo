@@ -1,0 +1,12 @@
+../Drivers/CMSIS/Include/core_cm7.h:2229:22:SCB_EnableICache	1
+../Drivers/CMSIS/Include/core_cm7.h:2281:22:SCB_EnableDCache	3
+../Core/Src/main.c:128:13:ai_log_err	2
+../Core/Src/main.c:142:12:ai_boostrap	4
+../Core/Src/main.c:186:6:MX_X_CUBE_AI_Init	1
+../Core/Src/main.c:195:5:argmax	3
+../Core/Src/main.c:206:6:transform_to_4d	3
+../Core/Src/main.c:226:5:main	5
+../Core/Src/main.c:317:6:SystemClock_Config	4
+../Core/Src/main.c:381:6:captureAndPreprocessFrame	7
+../Core/Src/main.c:401:6:getFrame	8
+../Core/Src/main.c:473:6:Error_Handler	1
