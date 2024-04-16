@@ -1,0 +1,11 @@
+../X-CUBE-AI/App/model.c:5414:9:ai_model_get_info	4
+../X-CUBE-AI/App/model.c:5460:9:ai_model_get_report	4
+../X-CUBE-AI/App/model.c:5506:10:ai_model_get_error	1
+../X-CUBE-AI/App/model.c:5512:10:ai_model_create	1
+../X-CUBE-AI/App/model.c:5556:12:ai_model_inputs_get	2
+../X-CUBE-AI/App/model.c:5566:12:ai_model_outputs_get	2
+../X-CUBE-AI/App/model.c:5576:11:ai_model_destroy	1
+../X-CUBE-AI/App/model.c:5582:9:ai_model_init	4
+../X-CUBE-AI/App/model.c:5522:10:ai_model_create_and_init	8
+../X-CUBE-AI/App/model.c:5599:8:ai_model_run	1
+../X-CUBE-AI/App/model.c:5606:8:ai_model_forward	1
