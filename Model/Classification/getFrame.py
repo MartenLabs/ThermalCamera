@@ -22,7 +22,6 @@ for file in file_list:
         # 더 이상 프레임을 읽을 수 없을 때 루프 종료
         if not ret:
             break
-        # 5프레임당 하나씩 이미지 추출
         if int(vidcap.get(1)) % 1 == 0:
             print('Saved frame number : ' + str(int(vidcap.get(1))))
             # 추출된 이미지가 저장되는 경로
